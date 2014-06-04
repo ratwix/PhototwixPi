@@ -1,0 +1,9 @@
+Template directory
+
+All template image are in the template_img directory
+All template configuration are in the config directory
+
+Template have to be in PNG format with alpha color. 
+
+If the template name finish with _config1, config1 will be loaded
+If the template name finish with _config2, config2 will be loaded ...
