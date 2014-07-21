@@ -5,7 +5,7 @@
 # include "util.h"
 # include "graphic_util.h"
 
-# define IMG_BACKGROUND "./img/back-black.jpg"
+# define DESIGN_FILE "./design/design.xml"
 
 class Screen {
 	public:
@@ -14,6 +14,7 @@ class Screen {
 		bool init();
 		
 		virtual void draw() = 0;
+		virtual void control(SDL_Event e) = 0;
 		
 	protected:
 		//Screen

@@ -4,14 +4,23 @@
 #include <iostream>
 #include <string>
 
+#define	CONFIG_FILE	"config.xml"
+
 using namespace std;
 
-static const int SCREEN_WIDTH = 1024;
-static const int SCREEN_HEIGHT = 748;
+struct s_config {
+	int 	screen_width;
+	int 	screen_height;
+	int 	screen_touch_width;
+	int 	screen_touch_height;
+	string	screen_touch_event;
+	int 	camera_width;
+	int 	camera_height;
+};
 
-static const int  CAMERA_WIDTH = 1280;
-static const int  CAMERA_HEIGHT = 720;
+extern s_config g_config;
 
+void load_config();
 
 void logSDLError(ostream &os, const string &msg);
 

@@ -1,0 +1,38 @@
+#ifndef __CONTROL_H__
+# define __CONTROL_H_
+
+# include <list>
+
+# define BUTTON_TEMPLATE		0x01
+# define BUTTON_GALLERY			0x02
+
+# define BUTTON_EFFECT_NORMAL	0x10
+# define BUTTON_EFFECT_BW		0x11
+# define BUTTON_EFFECT_SEPIA	0x12
+
+struct mouse_position {
+	mouse_position() : cur_x(-1), cur_y(-1), start_x(-1), start_y(-1), press(false) {}
+	int 	cur_x;
+	int 	cur_y;
+	int		start_x;
+	int		start_y;
+	bool	press;
+};
+
+struct button_position {
+	int control;
+	float x;
+	float y;
+	float dx;
+	float dy;
+};
+
+extern bool g_finish_mouse_thread;
+
+extern std::list<button_position> g_button_position_list;
+
+void init_control();
+void addControl(int control, float x, float y, float dx, float dy);
+int check_control(float x, float y);
+
+#endif

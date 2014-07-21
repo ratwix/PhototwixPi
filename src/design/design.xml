@@ -1,0 +1,26 @@
+<design>
+	<background file="./design/background.png"></background>
+
+	<templates>
+		<template file="./design/template_img/retro_config1.png" cut="0">
+			<cameras>
+				<camera x="0.1" y="0.1" w="0.3" h="0.2" rot="20"/>
+				<camera x="0.1" y="0.5" w="0.3" h="0.2" rot="40"/>
+			</cameras>
+		</template>
+		
+		<template file="./design/template_img/retro_config2.png" cut="0">
+			<cameras>
+				<camera x="0.1" y="0.1" w="0.3" h="0.2" rot="20"/>
+				<camera x="0.1" y="0.5" w="0.3" h="0.2" rot="40"/>
+			</cameras>
+		</template>
+		
+		<template file="./design/template_img/retro_config3.png" cut="0">
+			<cameras>
+				<camera x="0.1" y="0.1" w="0.3" h="0.2" rot="20"/>
+				<camera x="0.1" y="0.5" w="0.3" h="0.2" rot="40"/>
+			</cameras>
+		</template>
+	</templates>
+</design>

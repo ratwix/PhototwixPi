@@ -89,7 +89,7 @@ class Gfx_Camera
 		Gfx_Camera(Graphic_Util &g);
 		~Gfx_Camera();
 		void read_frame();
-		void draw_camera(float x0, float y0, float x1, float y1);
+		void draw_camera();
 };
 
 class Graphic_Util {

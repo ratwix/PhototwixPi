@@ -1,9 +1,9 @@
 #include "graphic_util.h"
 
-
-
 Graphic_Util::Graphic_Util() {
+	std::cout << "GRAPHIC UTIL" << std::endl;
 	//Init SDL Opengl COntext at startup
+	
 	init_sdl();
 	build_shader();
 }
@@ -17,11 +17,11 @@ bool Graphic_Util::init_sdl() {
     }
 
 	//Init OpenGL windows
-	window = SDL_CreateWindow("Phototwix",SDL_WINDOWPOS_UNDEFINED,
-														  SDL_WINDOWPOS_UNDEFINED,
-														  SCREEN_WIDTH,
-														  SCREEN_HEIGHT,
-														  SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL | SDL_WINDOW_OPENGL);
+	window = SDL_CreateWindow("Photobooth",SDL_WINDOWPOS_CENTERED,
+														  SDL_WINDOWPOS_CENTERED,
+														  g_config.screen_width,
+														  g_config.screen_height,
+														  SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 	check();
 	
 	if( window )
@@ -44,14 +44,15 @@ bool Graphic_Util::init_sdl() {
 	}
 	
 	//Init SDL_Image
-	int flags=IMG_INIT_JPG|IMG_INIT_PNG;
-	int initted=IMG_Init(flags);
+	int flags = IMG_INIT_JPG|IMG_INIT_PNG;
+	int initted = IMG_Init(flags);
 		
 	if((initted & flags) != flags) {
 		cerr << "IMG_Init: Failed to init required jpg and png support!\n" << "IMG_Init: " << IMG_GetError() << endl;
 		return false;
 	}
 	
+	SDL_ShowCursor(0);
 	
 	return true;
 }
@@ -61,10 +62,7 @@ Gfx_Texture * Graphic_Util::load_image( const string filename )
         SDL_Surface *surface;
         GLuint textureid;
         int mode;
-		
         surface = IMG_Load(filename.c_str());
-
-		
 		
         // could not load filename
         if (!surface) {
@@ -110,7 +108,9 @@ void Graphic_Util::build_shader() {
 	// 
     GSimpleProg.Create(&GSimpleVS,&GSimpleFS);
 	GYUVProg.Create(&GSimpleVS,&GYUVFS);
+	
 	GSepiaProg.Create(&GSimpleVS,&GSepiaFS);
+	
 	// GBlurProg.Create(&GSimpleVS,&GBlurFS);
 	// GSobelProg.Create(&GSimpleVS,&GSobelFS);
 	// GMedianProg.Create(&GSimpleVS,&GMedianFS);
@@ -383,7 +383,7 @@ bool Gfx_Shader::LoadVertexShader(const char* filename)
 	}
 	else
 	{
-		cout << "Compiled vertex shader " << filename << ":\n" << Src;
+		cout << "Compiled vertex shader " << filename << ":\n";
 	}
 
 	return true;
@@ -422,7 +422,7 @@ bool Gfx_Shader::LoadFragmentShader(const char* filename)
 	}
 	else
 	{
-		cout << "Compiled fragment shader " << filename << ":\n" << Src;	
+		cout << "Compiled fragment shader " << filename << ":\n" << endl;	
 	}
 
 	return true;
@@ -460,7 +460,7 @@ bool Gfx_Program::Create(Gfx_Shader* vertex_shader, Gfx_Shader* fragment_shader)
 	// Prints the information log for a program object
 	char log[1024];
 	glGetProgramInfoLog(Id,sizeof log,NULL,log);
-	cout << Id << ":program:\n" << log << endl;
+	//cout << Id << ":program:\n" << log << endl;
 
 	return true;	
 }
@@ -472,25 +472,26 @@ bool Gfx_Program::Create(Gfx_Shader* vertex_shader, Gfx_Shader* fragment_shader)
 Gfx_Camera::Gfx_Camera(Graphic_Util	&g):
 	graphic_util(g)
 {
+	std::cout << "CAMERA:" << g_config.camera_width << "," << g_config.camera_height << std::endl;
 	//Init the camera, 15fps, 1 resolution, no RGB conersion
-	cam = StartCamera(CAMERA_WIDTH, CAMERA_HEIGHT, 15, 1, false); 
 	
-	ytexture.CreateGreyScale(CAMERA_WIDTH, CAMERA_HEIGHT);
-	utexture.CreateGreyScale(CAMERA_WIDTH / 2,CAMERA_HEIGHT / 2);
-	vtexture.CreateGreyScale(CAMERA_WIDTH / 2,CAMERA_HEIGHT / 2);
+	cam = StartCamera(g_config.camera_width, g_config.camera_height, 15, 1, false); 
+	
+	ytexture.CreateGreyScale(g_config.camera_width, g_config.camera_height);
+	utexture.CreateGreyScale(g_config.camera_width / 2, g_config.camera_height / 2);
+	vtexture.CreateGreyScale(g_config.camera_width / 2, g_config.camera_height / 2);
 
-	yreadtexture.CreateRGBA(CAMERA_WIDTH, CAMERA_HEIGHT);
+	yreadtexture.CreateRGBA(g_config.camera_width, g_config.camera_height);
 	yreadtexture.GenerateFrameBuffer();
 	
-	ureadtexture.CreateRGBA(CAMERA_WIDTH / 2,CAMERA_HEIGHT / 2);
+	ureadtexture.CreateRGBA(g_config.camera_width / 2, g_config.camera_height / 2);
 	ureadtexture.GenerateFrameBuffer();
 	
-	vreadtexture.CreateRGBA(CAMERA_WIDTH / 2,CAMERA_HEIGHT / 2);
+	vreadtexture.CreateRGBA(g_config.camera_width / 2, g_config.camera_height / 2);
 	vreadtexture.GenerateFrameBuffer();
 	
-	rgbtextures.CreateRGBA(CAMERA_WIDTH, CAMERA_HEIGHT);
+	rgbtextures.CreateRGBA(g_config.camera_width, g_config.camera_height);
 	rgbtextures.GenerateFrameBuffer();
-	
 }
 
 void Gfx_Camera::read_frame() {
@@ -500,10 +501,10 @@ void Gfx_Camera::read_frame() {
 	//lock the chosen frame buffer, and copy it directly into the corresponding open gl texture
 	{
 		const uint8_t* data = (const uint8_t*) frame_data;
-		int ypitch = CAMERA_WIDTH;
-		int ysize = ypitch * CAMERA_HEIGHT;
-		int uvpitch = CAMERA_WIDTH / 2;
-		int uvsize = uvpitch * CAMERA_HEIGHT / 2;
+		int ypitch = g_config.camera_width;
+		int ysize = ypitch * g_config.camera_height;
+		int uvpitch = g_config.camera_width / 2;
+		int uvsize = uvpitch * g_config.camera_height / 2;
 		int upos = ysize;
 		int vpos = upos + uvsize;
 		//printf("Frame data len: 0x%x, ypitch: 0x%x ysize: 0x%x, uvpitch: 0x%x, uvsize: 0x%x, u at 0x%x, v at 0x%x, total 0x%x\n", frame_sz, ypitch, ysize, uvpitch, uvsize, upos, vpos, vpos+uvsize);
@@ -519,17 +520,24 @@ void Gfx_Camera::read_frame() {
 	
 	//these are just here so we can access the yuv data cpu side - opengles doesn't let you read grey ones cos they can't be frame buffers!
 
+	/*
 	graphic_util.drawRect(&ytexture, -1, -1, 1, 1, &yreadtexture);
 	graphic_util.drawRect(&utexture, -1, -1, 1, 1, &ureadtexture);
 	graphic_util.drawRect(&vtexture, -1, -1, 1, 1, &vreadtexture);
+	*/
 }
 
-void Gfx_Camera::draw_camera(float x0, float y0, float x1, float y1) {
+void Gfx_Camera::draw_camera() {
 	//graphic_util.drawRect(&rgbtextures, x0, y0, x1, y1, NULL);
-	graphic_util.drawRectSepia(&rgbtextures, -1, 0, 0, -1, NULL);
+	//draw camera at -0.5; 0.5; calculate height
+	GLfloat cam_h = g_config.camera_height * 1.1 / g_config.camera_width / 2.0 * g_config.screen_width / g_config.screen_height;
+	
+	graphic_util.drawRectSepia(&rgbtextures, -0.55, cam_h, 0.55, -cam_h, NULL);
+	/*
 	graphic_util.drawRect(&yreadtexture, -1, 1, 0, 0, NULL);
 	graphic_util.drawRect(&ureadtexture, 0, 1, 1, 0, NULL);
 	graphic_util.drawRect(&vreadtexture	, 0, 0, 1, -1, NULL);
+	*/
 }
 
 Gfx_Camera::~Gfx_Camera() {
