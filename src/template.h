@@ -8,11 +8,10 @@
 
 class Template_Camera {
 	public:
-		Template_Camera(GLfloat x, GLfloat y, GLfloat width, GLfloat height, GLfloat rot);
-	private:
-		GLfloat 	x, y, width, height, rot;
-		bool		update;
+		Template_Camera(GLfloat x, GLfloat y, GLfloat dx, GLfloat dy, GLfloat rot);
 		Gfx_Texture	tex;
+		bool		active;	
+		GLfloat 	x, y, dx, dy, rot;	
 };
 
 class Template {
@@ -22,14 +21,17 @@ class Template {
 		
 		void draw();
 		void active_control();
-
+		int	 get_nb_photo();
+		
+		void clear_template();
+		void set_photo(Gfx_Texture *t, int nb);
 	private:
 		GLfloat x, y, dx, dy;
 		Graphic_Util &graphic_util;
 		std::string filename;
-		std::list<Template_Camera> cams; 
+		std::list<Template_Camera*> cams; 
 		Gfx_Texture	*base_tex;
-		Gfx_Texture	*res_tex;
+		Gfx_Texture	res_tex;
 };
 
 

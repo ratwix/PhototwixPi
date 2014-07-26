@@ -1,6 +1,0 @@
-<template_config>
-	<cameras>
-		<camera x="0.1" y="0.1" w="0.3" h="0.2" rot="20"/>
-		<camera x="0.1" y="0.5" w="0.3" h="0.2" rot="40"/>
-	</cameras>
-</template_config>

@@ -1,4 +1,12 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+
 #include "graphic_util.h"
+#include "control.h"
+#include "SDL_mixer.h"
+#include <vector>
+
 
 Graphic_Util::Graphic_Util() {
 	std::cout << "GRAPHIC UTIL" << std::endl;
@@ -53,6 +61,12 @@ bool Graphic_Util::init_sdl() {
 	}
 	
 	SDL_ShowCursor(0);
+	
+	 //Initialize SDL_mixer
+    if( Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1 )
+    {
+        return false;    
+    }
 	
 	return true;
 }
@@ -167,8 +181,40 @@ void Graphic_Util::drawRect(Gfx_Texture* texture, float x0, float y0, float x1, 
 	
 	if(render_target)
 	{
-		//glFinish();	check();
-		//glFlush(); check();
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport ( 0, 0, w_width, w_height );
+	}
+}
+
+void Graphic_Util::drawBlack(float x0, float y0, float x1, float y1, Gfx_Texture* render_target) {
+	if(render_target)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER,render_target->GetFramebufferId());
+		glViewport ( 0, 0, render_target->GetWidth(), render_target->GetHeight() );
+		check();
+	}
+	
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);	
+	
+	glUseProgram(GSimpleProg.GetId());	check();
+	
+	glUniform2f(glGetUniformLocation(GSimpleProg.GetId(),"offset"),x0,y0);
+	glUniform2f(glGetUniformLocation(GSimpleProg.GetId(),"scale"),x1-x0,y1-y0);
+	glUniform1i(glGetUniformLocation(GSimpleProg.GetId(),"tex"), 0);
+	check();
+	
+	glBindBuffer(GL_ARRAY_BUFFER, GQuadVertexBuffer);	check();
+	
+	GLuint loc = glGetAttribLocation(GSimpleProg.GetId(),"vertex");
+	glVertexAttribPointer(loc, 4, GL_FLOAT, 0, 16, 0);	check();
+	glEnableVertexAttribArray(loc);	check();
+	glDrawArrays ( GL_TRIANGLE_STRIP, 0, 4 ); check();
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	
+	if(render_target)
+	{
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport ( 0, 0, w_width, w_height );
 	}
@@ -204,8 +250,6 @@ void Graphic_Util::drawRectSepia(Gfx_Texture* texture, float x0, float y0, float
 	
 	if(render_target)
 	{
-		//glFinish();	check();
-		//glFlush(); check();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glViewport ( 0, 0, w_width, w_height );
 	}
@@ -247,8 +291,6 @@ void Graphic_Util::drawYUVTextureRect(Gfx_Texture* ytexture, Gfx_Texture* utextu
 
 	if(render_target)
 	{
-		//glFinish();	check();
-		//glFlush(); check();
 		glBindFramebuffer(GL_FRAMEBUFFER,0);
 		glViewport ( 0, 0, w_width, w_height );
 	}
@@ -286,11 +328,15 @@ bool Gfx_Texture::CreateRGBA(int width, int height, const void* data, GLint mode
 	Height = height;
 	glGenTextures(1, &Id);
 	glBindTexture(GL_TEXTURE_2D, Id);
+	check();
 	glTexImage2D(GL_TEXTURE_2D, 0, mode, Width, Height, 0, mode, GL_UNSIGNED_BYTE, data); //RGB || RGBA!!!!!
+	check();
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, (GLfloat)GL_NEAREST);
+	check();
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (GLfloat)GL_LINEAR);
+	check();
 	glBindTexture(GL_TEXTURE_2D, 0);
-
+	check();
 	return true;
 }
 
@@ -492,6 +538,9 @@ Gfx_Camera::Gfx_Camera(Graphic_Util	&g):
 	
 	rgbtextures.CreateRGBA(g_config.camera_width, g_config.camera_height);
 	rgbtextures.GenerateFrameBuffer();
+	
+	resulttexture.CreateRGBA(g_config.camera_width, g_config.camera_height);
+	resulttexture.GenerateFrameBuffer();
 }
 
 void Gfx_Camera::read_frame() {
@@ -519,20 +568,29 @@ void Gfx_Camera::read_frame() {
 	graphic_util.drawYUVTextureRect(&ytexture, &utexture, &vtexture, -1.f, -1.f, 1.f, 1.f, &rgbtextures);
 	
 	//these are just here so we can access the yuv data cpu side - opengles doesn't let you read grey ones cos they can't be frame buffers!
-
-	/*
+	
 	graphic_util.drawRect(&ytexture, -1, -1, 1, 1, &yreadtexture);
+	/*
 	graphic_util.drawRect(&utexture, -1, -1, 1, 1, &ureadtexture);
 	graphic_util.drawRect(&vtexture, -1, -1, 1, 1, &vreadtexture);
 	*/
 }
 
-void Gfx_Camera::draw_camera() {
+void Gfx_Camera::draw_camera(int effect) {
 	//graphic_util.drawRect(&rgbtextures, x0, y0, x1, y1, NULL);
 	//draw camera at -0.5; 0.5; calculate height
+	
+	if (effect == BUTTON_EFFECT_NORMAL) {
+		graphic_util.drawRect(&rgbtextures, -1, -1, 1, 1, &resulttexture);
+	} else if (effect == BUTTON_EFFECT_BW) {
+		graphic_util.drawRect(&yreadtexture, -1, -1, 1, 1, &resulttexture);
+	} else if (effect == BUTTON_EFFECT_SEPIA) {
+		graphic_util.drawRectSepia(&rgbtextures, -1, -1, 1, 1, &resulttexture);
+	}
+	
 	GLfloat cam_h = g_config.camera_height * 1.1 / g_config.camera_width / 2.0 * g_config.screen_width / g_config.screen_height;
 	
-	graphic_util.drawRectSepia(&rgbtextures, -0.55, cam_h, 0.55, -cam_h, NULL);
+	graphic_util.drawRect(&resulttexture, -0.55, cam_h, 0.55, -cam_h, NULL);
 	/*
 	graphic_util.drawRect(&yreadtexture, -1, 1, 0, 0, NULL);
 	graphic_util.drawRect(&ureadtexture, 0, 1, 1, 0, NULL);

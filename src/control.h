@@ -1,7 +1,8 @@
 #ifndef __CONTROL_H__
-# define __CONTROL_H_
+# define __CONTROL_H__
 
 # include <list>
+# include "graphic_util.h"
 
 # define BUTTON_TEMPLATE		0x01
 # define BUTTON_GALLERY			0x02
@@ -33,6 +34,22 @@ extern std::list<button_position> g_button_position_list;
 
 void init_control();
 void addControl(int control, float x, float y, float dx, float dy);
+void clearControl();
 int check_control(float x, float y);
+
+class Button {
+	public:
+		Button(Graphic_Util &g, std::string name);
+		void draw();
+		~Button(); //Free texture
+		bool	selected;
+	private:
+		Graphic_Util	&graphic_util;
+		int				code;
+		GLfloat 		x, y, dx, dy;
+		std::string		button_name;
+		Gfx_Texture		*texture;
+		Gfx_Texture		*select_texture;
+};
 
 #endif

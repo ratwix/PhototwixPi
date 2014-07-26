@@ -50,7 +50,7 @@ class Gfx_Texture
 	int Height;
 	GLuint Id;
 
-
+	
 	GLuint FramebufferId;
 public:
 
@@ -85,11 +85,14 @@ class Gfx_Camera
 		Gfx_Texture yreadtexture,ureadtexture,vreadtexture;
 		Gfx_Texture rgbtextures;
 		
+		Gfx_Texture	resulttexture;
+		
 	public:
 		Gfx_Camera(Graphic_Util &g);
 		~Gfx_Camera();
 		void read_frame();
-		void draw_camera();
+		void draw_camera(int effect);
+		Gfx_Texture *get_result_photo() {return &resulttexture;}
 };
 
 class Graphic_Util {
@@ -128,13 +131,13 @@ class Graphic_Util {
 		void drawRectSepia(Gfx_Texture* texture, float x0, float y0, float x1, float y1, Gfx_Texture* render_target);
 		//Combine YUV texture in a RGB Texture
 		void drawYUVTextureRect(Gfx_Texture* ytexture, Gfx_Texture* utexture, Gfx_Texture* vtexture, float x0, float y0, float x1, float y1, Gfx_Texture* render_target);
+		void drawBlack(float x0, float y0, float x1, float y1, Gfx_Texture* render_target);
 		
 		SDL_Window* getWindow(){return window;};
 		SDL_GLContext getGlContext(){return glContext;};
 		Graphic_Util();
 		~Graphic_Util();
 };
-
 
 
 

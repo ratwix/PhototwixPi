@@ -7,10 +7,15 @@
 #include <iostream>
 #include <ctime>
 #include <SDL2/SDL.h>
+#include <fstream>
+#include <vector>
 
 #include "control.h"
 #include "util.h"
+#include "screen.h"
+#include "lib/rapidxml/rapidxml.hpp"
 
+using namespace rapidxml;
 
 //Global touch variable
 mouse_position g_mouse;
@@ -142,4 +147,79 @@ int check_control(float x, float y) {
 	}
 	
 	return 0;
+}
+
+void clearControl() {
+	g_button_position_list.clear();
+}
+
+Button::Button(Graphic_Util &g, std::string name):
+	graphic_util(g),
+	selected(false)
+{
+	std::cout << "Parsing config XML for button " << name << std::endl;
+	std::ifstream design_file (DESIGN_FILE);
+	assert(design_file);
+	vector<char> buffer((istreambuf_iterator<char>(design_file)), istreambuf_iterator<char>());
+	buffer.push_back('\0');
+	rapidxml::xml_document<> doc;
+	doc.parse<0>(&buffer[0]);
+	std::cout << "End parsing config XML" << std::endl;
+	design_file.close();
+	
+	rapidxml::xml_node<> *design_node = doc.first_node("design");
+	rapidxml::xml_node<> *design_buttons = design_node->first_node("buttons");
+	
+	//For all button, look for the good one
+	int tmp = 0;
+	for (xml_node<> * design_button = design_buttons->first_node("button"); design_button; design_button = design_button->next_sibling())
+	{
+		std::string n = design_button->first_attribute("name")->value();
+		if (n == name) { //Match a button name
+			x = atof(design_button->first_attribute("x")->value());
+			y = atof(design_button->first_attribute("y")->value());
+			dx = atof(design_button->first_attribute("dx")->value());
+			dy = atof(design_button->first_attribute("dy")->value());
+			button_name = name;
+			
+			std::cout << "Load button " << name << " texture" << std::endl;
+			texture = graphic_util.load_image(design_button->first_attribute("file")->value());
+			
+			if ((design_button->first_attribute("select") != NULL) && (design_button->first_attribute("select")->value() != "")) {
+				select_texture = graphic_util.load_image(design_button->first_attribute("select")->value());
+			}
+			
+			if (name == "BUTTON_GALLERY") {
+				code = BUTTON_GALLERY;
+			} else if (name == "BUTTON_EFFECT_NORMAL") {
+				code = BUTTON_EFFECT_NORMAL;
+			} else if (name == "BUTTON_EFFECT_BW") {
+				code = BUTTON_EFFECT_BW;
+			} else if (name == "BUTTON_EFFECT_SEPIA") {
+				code = BUTTON_EFFECT_SEPIA;
+			}
+			
+			addControl(code, x, y, dx, dy);
+
+			break;
+		}
+	}
+	
+}
+
+void Button::draw() {
+	graphic_util.drawRect(texture, x, y, dx, dy, NULL);
+	
+	if (selected && (select_texture != NULL)) {
+		graphic_util.drawRect(select_texture, x, y, dx, dy, NULL);
+	}
+}
+
+Button::~Button() {
+	if (texture != 0) {
+		delete texture;
+	}
+	if (select_texture != 0) {
+		delete select_texture;
+	}
 }

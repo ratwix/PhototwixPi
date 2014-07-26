@@ -2,11 +2,15 @@ cmake_minimum_required(VERSION 2.8)
 project( phototwix )
 SET(COMPILE_DEFINITIONS -Werror -Wall -c -ansi)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-find_package(OpenCV REQUIRED)
+
+
+
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
+find_package(SDL2_mixer REQUIRED)
 include_directories(${SDL_INCLUDE_DIR})
 include_directories(${SDL2_IMAGE_INCLUDE_DIR})
+include_directories(${SDL2_Mixer_INCLUDE_DIR})
 include_directories(/opt/vc/include)
 include_directories(/opt/vc/userland-master/interface/vcos)
 include_directories(/opt/vc/userland-master)
@@ -21,10 +25,15 @@ add_executable(phototwix main.cpp
 						screen_camera.cpp
 						graphic_util.cpp
 						template.cpp
+						control.cpp
 						./lib/camera/camera.cpp
 						./lib/camera/cameracontrol.cpp
 						)
 
+configure_file(		${CMAKE_CURRENT_SOURCE_DIR}/config.xml
+					${CMAKE_CURRENT_BINARY_DIR}/config.xml COPYONLY)
+						
+						
 configure_file(		${CMAKE_CURRENT_SOURCE_DIR}/img/back-black.jpg
 					${CMAKE_CURRENT_BINARY_DIR}/img/back-black.jpg COPYONLY)
 					
@@ -36,7 +45,9 @@ configure_file(		${CMAKE_CURRENT_SOURCE_DIR}/shaders/yuvfragshader.glsl
 					${CMAKE_CURRENT_BINARY_DIR}/shaders/yuvfragshader.glsl COPYONLY)
 configure_file(		${CMAKE_CURRENT_SOURCE_DIR}/shaders/sepiashader.glsl
 					${CMAKE_CURRENT_BINARY_DIR}/shaders/sepiashader.glsl COPYONLY)					
-						
+
+list( APPEND CMAKE_CXX_FLAGS "-std=c++0x ${CMAKE_CXX_FLAGS}")
+					
 target_link_libraries(phototwix libmmal_core.so 
 								libmmal_util.so 
 								libmmal_vc_client.so 
@@ -45,6 +56,7 @@ target_link_libraries(phototwix libmmal_core.so
 								GLESv2 
 								EGL
 								ncurses 
-								${OpenCV_LIBS}
+								gpm
 								${SDL2_LIBRARY}
-								${SDL2_IMAGE_LIBRARIES})
+								${SDL2_IMAGE_LIBRARIES}
+								${SDLMIXER_LIBRARY})
