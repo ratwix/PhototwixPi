@@ -25,6 +25,7 @@ class Template {
 		
 		void clear_template();
 		void set_photo(Gfx_Texture *t, int nb);
+		void save();
 	private:
 		GLfloat x, y, dx, dy;
 		Graphic_Util &graphic_util;

@@ -120,6 +120,7 @@ class Graphic_Util {
 		
 		bool init_sdl();
 		void build_shader();
+		bool save_png(const char *filename, GLubyte *pixels, int w, int h);
 	public :
 		void	clear_screen();
 		void	refresh_screen();
@@ -132,6 +133,9 @@ class Graphic_Util {
 		//Combine YUV texture in a RGB Texture
 		void drawYUVTextureRect(Gfx_Texture* ytexture, Gfx_Texture* utexture, Gfx_Texture* vtexture, float x0, float y0, float x1, float y1, Gfx_Texture* render_target);
 		void drawBlack(float x0, float y0, float x1, float y1, Gfx_Texture* render_target);
+		
+		void save_texture(Gfx_Texture* texture, string name);
+		void save_texture_thumb(Gfx_Texture* tex, string name);
 		
 		SDL_Window* getWindow(){return window;};
 		SDL_GLContext getGlContext(){return glContext;};

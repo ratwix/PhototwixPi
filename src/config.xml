@@ -1,4 +1,6 @@
 <phototwix>
 	<screen	w="1360" h="768" touch_w="4096" touch_h="4096" event="/dev/input/event0"></screen>
 	<camera w="1280" h="720"></camera>
+	<countdown sec="4"></countdown>
+	<photos dir="./result" thumb="./result/thumb"></photos>
 </phototwix>

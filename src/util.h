@@ -16,6 +16,9 @@ struct s_config {
 	string	screen_touch_event;
 	int 	camera_width;
 	int 	camera_height;
+	string	result_dir;
+	string	result_thumb_dir;
+	int		countdown;
 };
 
 extern s_config g_config;

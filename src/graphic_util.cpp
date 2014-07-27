@@ -6,7 +6,13 @@
 #include "control.h"
 #include "SDL_mixer.h"
 #include <vector>
-
+#include <iostream>
+#include <fstream> 
+#include <chrono>
+#include <ctime>
+#include <png.h>
+#include <setjmp.h>
+#include <png++/png.hpp>
 
 Graphic_Util::Graphic_Util() {
 	std::cout << "GRAPHIC UTIL" << std::endl;
@@ -296,6 +302,37 @@ void Graphic_Util::drawYUVTextureRect(Gfx_Texture* ytexture, Gfx_Texture* utextu
 	}
 }
 
+void Graphic_Util::save_texture(Gfx_Texture* tex, string name) {
+	std::cout << "Save file " << name << std::endl;
+	glBindFramebuffer(GL_FRAMEBUFFER, tex->GetFramebufferId());
+	check();
+	glViewport (0, 0, tex->GetWidth(), tex->GetHeight());
+	check();
+	int size = (tex->GetWidth() + 1) * (tex->GetHeight() + 1) * 4;
+	GLubyte res[size];
+	glReadPixels(0, 0, tex->GetWidth(), tex->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, &res);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glViewport ( 0, 0, w_width, w_height );
+	check();
+	
+	save_png(name.c_str(), res, tex->GetWidth(), tex->GetHeight());
+	std::cout << "End save file " << name << std::endl;
+}
+
+void Graphic_Util::save_texture_thumb(Gfx_Texture* tex, string name) {
+	std::cout << "Save thumb " << name << std::endl;
+	
+	Gfx_Texture thumb;
+	
+	thumb.CreateRGBA(tex->GetWidth() / 3, tex->GetHeight() / 3);
+	thumb.GenerateFrameBuffer();
+	drawRect(tex, -1, -1, 1, 1, &thumb);
+	
+	save_texture(&thumb, name);
+	
+	std::cout << "End save thumb " << name << std::endl;
+}
+
 
 //Clear the screen before a new draw
 void Graphic_Util::clear_screen() {
@@ -384,6 +421,9 @@ void Gfx_Texture::SetPixels(const void* data)
 
 Gfx_Texture::~Gfx_Texture() {
 	glDeleteTextures(1, &Id);
+	if (FramebufferId != 0) {
+		glDeleteFramebuffers(1, &FramebufferId);
+	}
 }
 
 
@@ -591,13 +631,38 @@ void Gfx_Camera::draw_camera(int effect) {
 	GLfloat cam_h = g_config.camera_height * 1.1 / g_config.camera_width / 2.0 * g_config.screen_width / g_config.screen_height;
 	
 	graphic_util.drawRect(&resulttexture, -0.55, cam_h, 0.55, -cam_h, NULL);
-	/*
-	graphic_util.drawRect(&yreadtexture, -1, 1, 0, 0, NULL);
-	graphic_util.drawRect(&ureadtexture, 0, 1, 1, 0, NULL);
-	graphic_util.drawRect(&vreadtexture	, 0, 0, 1, -1, NULL);
-	*/
 }
 
 Gfx_Camera::~Gfx_Camera() {
 	StopCamera();
+}
+
+typedef struct {
+    GLubyte red;
+    GLubyte green;
+    GLubyte blue;
+} pixel_t;
+
+
+bool Graphic_Util::save_png(const char *filename, GLubyte *pixels, int w, int h)
+{
+	 std::chrono::time_point<std::chrono::system_clock> start = std::chrono::system_clock::now();
+	
+	
+	png::image< png::rgb_pixel > image(w, h);
+	for (int y = 0; y < h; ++y)
+	{
+		for (int x = 0; x < w; ++x)
+		{
+			GLubyte r = pixels[4 * sizeof(GLubyte) * (w * y + x)];
+			GLubyte g = pixels[4 * sizeof(GLubyte) * (w * y + x) + 1];
+			GLubyte b = pixels[4 * sizeof(GLubyte) * (w * y + x) + 2];
+			GLubyte a = pixels[4 * sizeof(GLubyte) * (w * y + x) + 3];
+			image[y][x] = png::rgb_pixel(r, g, b);
+		}
+	}
+	image.write(filename);
+	
+	
+	std::cout << "Write PNG in  " << std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - start).count() << "s" << std::endl;
 }

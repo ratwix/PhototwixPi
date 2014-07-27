@@ -8,6 +8,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 find_package(SDL2 REQUIRED)
 find_package(SDL2_image REQUIRED)
 find_package(SDL2_mixer REQUIRED)
+find_package(PNG REQUIRED)
+include_directories(${PNG_INCLUDE_DIR})
 include_directories(${SDL_INCLUDE_DIR})
 include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 include_directories(${SDL2_Mixer_INCLUDE_DIR})
@@ -59,4 +61,5 @@ target_link_libraries(phototwix libmmal_core.so
 								gpm
 								${SDL2_LIBRARY}
 								${SDL2_IMAGE_LIBRARIES}
-								${SDLMIXER_LIBRARY})
+								${SDLMIXER_LIBRARY}
+								${PNG_LIBRARY})

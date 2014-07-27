@@ -1,5 +1,6 @@
 # include <iostream>
 # include <fstream>
+# include <chrono>
 
 # include "template.h"
 # include "util.h"
@@ -54,8 +55,6 @@ Template::~Template()
 }
 
 void Template::draw() {
-	//TODO: update the res texture
-	
 	//Draw the res texture
 	std::list<Template_Camera*>::iterator i = cams.begin();
 	while (i != cams.end()) {
@@ -87,6 +86,23 @@ void Template::clear_template() {
 		(*i)->active = false;
 		i++;
 	}
+}
+
+void Template::save() {
+	std::cout << "Sauvegarde template " << std::endl;
+	
+	time_t rawtime;
+	struct tm * timeinfo;
+	char buffer[80];
+
+	time (&rawtime);
+	timeinfo = localtime(&rawtime);
+
+	strftime(buffer,80,"photo_%Y-%m-%d_%I:%M:%S.png",timeinfo);
+	std::string str(buffer); 
+	
+	graphic_util.save_texture(&res_tex, g_config.result_dir + "/" + str);
+	graphic_util.save_texture_thumb(&res_tex, g_config.result_thumb_dir + "/" + str);
 }
 
 void Template::set_photo(Gfx_Texture *t, int nb) {

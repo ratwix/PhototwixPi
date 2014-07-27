@@ -59,6 +59,13 @@ void load_config() {
 	g_config.camera_width = std::stoi(camera->first_attribute("w")->value());
 	g_config.camera_height = std::stoi(camera->first_attribute("h")->value());
 	
+	xml_node<> *countdown = phototwix->first_node("countdown");
+	g_config.countdown = std::stoi(countdown->first_attribute("sec")->value());
+	
+	xml_node<> *photos = phototwix->first_node("photos");
+	g_config.result_dir = photos->first_attribute("dir")->value();
+	g_config.result_thumb_dir = photos->first_attribute("thumb")->value();		
+	
 	std::cout << "CAMERA TEST:" << g_config.camera_width << "," << g_config.camera_height << std::endl;
 	
 }

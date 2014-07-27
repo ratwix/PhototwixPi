@@ -73,9 +73,9 @@ void ScreenCamera::draw() {
 			}
 			
 			/* Draw lights */
-			draw_lights(MAX_LIGHT, current_light);
+			draw_lights(g_config.countdown, current_light);
 			
-			if (current_light > MAX_LIGHT) { //If all the lights on --> green light : take the photo
+			if (current_light > g_config.countdown) { //If all the lights on --> green light : take the photo
 				//TODO : Flash
 				if (single_photo) {
 					Mix_PlayChannel(-1, sound_photo, 0);
@@ -85,7 +85,7 @@ void ScreenCamera::draw() {
 				}
 			}
 			
-			if (current_light > MAX_LIGHT + 1) { //If all the lights on --> green light : take the photo
+			if (current_light > g_config.countdown + 1) { //If all the lights on --> green light : take the photo
 				current_photo++;
 				current_light = 0; //on recommence
 				single_photo = true;
@@ -93,6 +93,7 @@ void ScreenCamera::draw() {
 		} else {
 			photo_in_process = false;
 			single_photo = true;
+			templates[current_template]->save();
 			//TODO : fin de la prise de photo
 		}
 	}
